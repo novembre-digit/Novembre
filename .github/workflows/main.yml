@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arborescence — Harfang Événements</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0c0f;color:#e8e4d8;font-family:'Syne',sans-serif;font-size:14px;min-height:100vh}
+
+header{background:#111318;border-bottom:1px solid rgba(255,255,255,.07);padding:16px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-sq{width:24px;height:24px;border:2px solid #EFC923;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#EFC923}
+.logo-name{font-size:12px;font-weight:700;color:#EFC923;letter-spacing:.1em;text-transform:uppercase}
+.sep{width:1px;height:18px;background:rgba(255,255,255,.08)}
+.htitle{font-size:10px;color:rgba(232,228,216,.3);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.search{flex:1;max-width:260px}
+.search input{width:100%;padding:7px 12px;background:#181c22;border:1px solid rgba(255,255,255,.07);border-radius:6px;color:#e8e4d8;font-family:'DM Mono',monospace;font-size:11px;outline:none;transition:border-color .15s}
+.search input:focus{border-color:#EFC923}
+.search input::placeholder{color:rgba(232,228,216,.25)}
+.mode-toggle{display:flex;background:#181c22;border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:3px;gap:3px;margin-left:auto;flex-shrink:0}
+.mode-btn{padding:6px 14px;font-size:11px;border:none;background:transparent;color:rgba(232,228,216,.5);cursor:pointer;border-radius:4px;transition:all .2s;font-weight:600;font-family:'Syne',sans-serif;white-space:nowrap}
+.mode-btn.active{background:#EFC923;color:#0a0c0f}
+.mode-btn:hover:not(.active){color:#e8e4d8}
+
+main{padding:20px 20px 60px}
+
+.root{background:linear-gradient(135deg,#EFC923,#d4a500);border-radius:10px;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;user-select:none;max-width:860px;margin-left:auto;margin-right:auto}
+.root-t{font-size:13px;font-weight:700;color:#0a0c0f}
+.root-h{font-family:'DM Mono',monospace;font-size:10px;color:rgba(0,0,0,.4)}
+#listInner{max-width:860px;margin:0 auto}
+
+.n1{margin-bottom:4px;border-radius:8px;border:1px solid rgba(255,255,255,.07);overflow:hidden;transition:border-color .2s}
+.n1:hover{border-color:rgba(239,201,35,.2)}
+.n1h{padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;background:#111318;user-select:none;transition:background .15s}
+.n1h:hover{background:#181c22}
+.n1-ico{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.n1-inf{flex:1}
+.n1-title{font-size:13px;font-weight:600;color:#e8e4d8}
+.n1-desc{font-size:11px;color:rgba(232,228,216,.45);margin-top:2px;line-height:1.4}
+.n1-count{font-family:'DM Mono',monospace;font-size:10px;color:#e8e4d8;flex-shrink:0}
+.chev{font-size:12px;color:rgba(232,228,216,.25);transition:transform .2s;margin-left:8px;flex-shrink:0}
+.chev.open{transform:rotate(90deg);color:#EFC923}
+.n1b{display:none;border-top:1px solid rgba(255,255,255,.04);background:#0a0c0f}
+.n2list{padding:8px 16px 10px 50px;display:flex;flex-direction:column;gap:3px}
+.n2{border:1px solid rgba(255,255,255,.04);border-radius:6px;overflow:hidden;background:#111318;transition:border-color .15s}
+.n2:hover{border-color:rgba(255,255,255,.1)}
+.n2h{padding:9px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none}
+.n2-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:#EFC923}
+.n2-inf{flex:1}
+.n2-title{font-size:12px;font-weight:600;color:#e8e4d8}
+.n2-desc{font-size:10px;color:rgba(232,228,216,.45);margin-top:2px;line-height:1.4}
+.n2b{display:none;border-top:1px solid rgba(255,255,255,.04);background:#181c22}
+.n3list{padding:6px 12px 8px 18px;display:flex;flex-direction:column;gap:1px;border-left:1px solid rgba(255,255,255,.07);margin:6px 12px}
+.n3{display:flex;gap:8px;padding:4px 2px}
+.n3-dash{font-size:9px;color:rgba(239,201,35,.4);font-family:'DM Mono',monospace;margin-top:2px;flex-shrink:0}
+.n3-title{font-size:11px;font-weight:500;color:rgba(232,228,216,.6)}
+.n3-desc{font-size:10px;color:rgba(232,228,216,.3);margin-top:1px;line-height:1.4}
+.tag{font-family:'DM Mono',monospace;font-size:8px;padding:2px 6px;border-radius:10px;font-weight:500;margin-left:6px}
+.tag-hub{background:rgba(159,143,223,.1);color:#9f8fdf;border:1px solid rgba(159,143,223,.2)}
+
+#treeView{display:none;overflow-x:auto;padding-bottom:20px}
+#treeView.active{display:block}
+#listView.hidden{display:none}
+
+#treeCanvas{position:relative;overflow:visible}
+#treeCanvas svg.connectors{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+
+.t-node{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;cursor:default;user-select:none;transition:transform .15s,box-shadow .15s}
+.t-node:hover{transform:translateY(-2px)}
+.t-node.root-node{background:linear-gradient(135deg,#EFC923,#c49a00);border-radius:24px;padding:7px 18px;font-size:11px;font-weight:700;color:#0a0c0f;box-shadow:0 3px 14px rgba(239,201,35,.3)}
+.t-node.l1{background:#1a1f2a;border:1.5px solid rgba(239,201,35,.35);border-radius:6px;padding:4px 7px;font-size:9.5px;font-weight:600;color:#e8e4d8;box-shadow:0 2px 6px rgba(0,0,0,.4);min-width:60px;max-width:95px;flex-direction:column;gap:1px}
+.t-node.l1.hub-node{border-color:rgba(159,143,223,.5)}
+.t-node.l2{background:#111318;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:3px 9px;font-size:9px;font-weight:500;color:rgba(232,228,216,.8);min-width:75px;max-width:100px}
+.t-node.l2.hub-node{border-color:rgba(239,201,35,.3);color:#EFC923}
+.t-node.l3{background:#0d1017;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:3px 8px;font-size:8.5px;font-weight:500;color:rgba(232,228,216,.55);min-width:68px;max-width:90px}
+
+.hidden{display:none!important}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0a0c0f}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-sq">H</div><div class="logo-name">Harfang</div></div>
+  <div class="sep"></div>
+  <div class="htitle">Arborescence du site</div>
+  <div class="search"><input type="text" id="search" placeholder="Rechercher une page…" oninput="doSearch(this.value)"></div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btnList" onclick="setMode('list')">Liste</button>
+    <button class="mode-btn" id="btnTree" onclick="setMode('tree')">Arborescence</button>
+  </div>
+</header>
+
+<main>
+  <div id="listView">
+    <div class="root" onclick="toggleAll()">
+      <div class="root-t">harfang-events.fr</div>
+      <div class="root-h">Cliquer pour tout fermer / ouvrir</div>
+    </div>
+    <div id="listInner"></div>
+  </div>
+  <div id="treeView">
+    <div id="treeCanvas">
+      <svg class="connectors" id="svgLines"></svg>
+    </div>
+  </div>
+</main>
+
+<script>
+const D=[
+  {color:'#EFC923',title:'Accueil',desc:'Page d\'entrée.'},
+  {color:'#5f9fbf',title:'Agence',desc:'Histoire, ADN, méthode Harfang, équipe, bâtiment…'},
+  {color:'#9f8fdf',title:'Expertises',desc:'Les métiers maîtrisés par Harfang.',hub:true,
+   children:[
+    {title:'Conseil',desc:'Phase de vision et préparation : plans de feu, plans de shoot, sécurité, dossiers administratifs et contractuels, SACEM.'},
+    {title:'Séminaire / Team Building / Incentive',desc:'Conception et organisation d\'événements internes à forte valeur ajoutée.'},
+    {title:'Design',desc:'Conception 3D, identité visuelle, scénographie.',hub:true,
+     children:[
+      {title:'Conception 3D / Modélisation'},{title:'Identité visuelle'},{title:'Design graphique'},{title:'Scénographie'},
+     ]},
+    {title:'Fabrication',desc:'Mobilier sur-mesure, production sur-mesure.',hub:true,
+     children:[
+      {title:'Stands sur-mesure'},{title:'Décors'},{title:'Mobilier sur-mesure'},
+     ]},
+    {title:'Organisation et ingénierie événementielle',desc:'Pilotage, coordination Jour J, coordination générale, conducteur de travaux / chef de chantier.'},
+    {title:'Production vidéo',desc:'Captation, studio de tournage intégré, reportage photo et vidéo.',hub:true,
+     children:[
+      {title:'Captation événementielle'},{title:'Studio de tournage intégré'},{title:'Reportage photo'},{title:'Reportage vidéo'},{title:'Vidéo d\'entreprise'},
+     ]},
+    {title:'Location',desc:'Location de matériel technique.',hub:true,
+     children:[
+      {title:'Son'},{title:'Lumière'},{title:'Vidéo'},{title:'Structure'},
+     ]},
+   ]},
+  {color:'#EFC923',title:'Solutions',desc:'Types d\'événements.',hub:true,
+   children:[
+    {title:'Événements entreprise',hub:true,
+     children:[
+      {title:'Soirée de Noël'},{title:'Soirée à thème'},{title:'Soirée insolite'},{title:'Conférence'},{title:'Salons & congrès'},{title:'Sur-mesure'},{title:'Inauguration'},{title:'Assemblée générale'},{title:'Vœux entreprise'},{title:'Anniversaire entreprise'},
+     ]},
+    {title:'Événements commerciaux',hub:true,
+     children:[
+      {title:'Boutique éphémère'},{title:'Corner en magasin'},{title:'Lancement de marque'},{title:'Lancement de produit'},{title:'Roadshow'},{title:'Stand salon'},{title:'Activation de marque'},{title:'Pop-up store'},
+     ]},
+    {title:'Sur-mesure',desc:'Votre vision, nos mains — mariages…'},
+   ]},
+  {color:'#5fbd5f',title:'Réalisations',desc:'Portfolio des projets.'},
+  {color:'#5fbd5f',title:'Actualités',desc:'Posts LinkedIn absorbés — actualités Harfang, tendances et contenus éditoriaux.',hub:true,
+   children:[
+    {title:'Actualités Harfang',desc:'Nouveautés, projets récents, vie de l\'agence.'},
+    {title:'Conseils & tendances',desc:'Articles experts — tendances événementielles, bonnes pratiques.'},
+    {title:'Mots-clés SEO',desc:'Articles ciblés : séminaire en Alsace, soirée de Noël, anniversaire d\'entreprise…'},
+   ]},
+  {color:'#cf8030',title:'Contact',desc:'Formulaire de devis — qualification par type de projet et agence.',hub:true,
+   children:[
+    {title:'Agence Strasbourg'},{title:'Agence Paris'},{title:'Agence Cannes'},
+   ]},
+];
+
+function n3el(n){
+  const d=document.createElement('div');
+  d.className='n3';d.dataset.s=(n.title+' '+(n.desc||'')).toLowerCase();
+  d.innerHTML=`<div class="n3-dash">→</div><div><div class="n3-title">${n.title}</div>${n.desc?`<div class="n3-desc">${n.desc}</div>`:''}</div>`;
+  return d;
+}
+function n2el(n){
+  const hasC=n.children&&n.children.length;
+  const d=document.createElement('div');
+  d.className='n2';d.dataset.s=(n.title+' '+(n.desc||'')).toLowerCase();
+  d.innerHTML=`<div class="n2h" onclick="tog(this)">
+    <div class="n2-dot"></div>
+    <div class="n2-inf">
+      <div class="n2-title">${n.title}${n.hub?'<span class="tag tag-hub">Liste déroulante</span>':''}</div>
+      ${n.desc?`<div class="n2-desc">${n.desc}</div>`:''}
+    </div>${hasC?'<span class="chev">›</span>':''}
+  </div>${hasC?'<div class="n2b"></div>':''}`;
+  if(hasC){const body=d.querySelector('.n2b');const list=document.createElement('div');list.className='n3list';n.children.forEach(c=>list.appendChild(c.children?n2el(c):n3el(c)));body.appendChild(list);}
+  return d;
+}
+function n1el(n){
+  const hasC=n.children&&n.children.length;
+  const w=document.createElement('div');
+  w.className='n1';w.dataset.s=(n.title+' '+(n.desc||'')).toLowerCase();
+  w.innerHTML=`<div class="n1h" onclick="tog(this)">
+    <div class="n1-ico" style="background:${n.color}"></div>
+    <div class="n1-inf">
+      <div class="n1-title">${n.title}${n.hub?'<span class="tag tag-hub">Liste déroulante</span>':''}</div>
+      ${n.desc?`<div class="n1-desc">${n.desc}</div>`:''}
+    </div>
+    ${hasC?`<div class="n1-count">${n.children.length} page${n.children.length>1?'s':''}</div>`:''}
+    ${hasC?'<span class="chev">›</span>':''}
+  </div>${hasC?'<div class="n1b"><div class="n2list"></div></div>':''}`;
+  if(hasC){const list=w.querySelector('.n2list');n.children.forEach(c=>list.appendChild(n2el(c)));}
+  return w;
+}
+function tog(h){const b=h.nextElementSibling,c=h.querySelector('.chev');if(!b)return;const o=b.style.display==='block';b.style.display=o?'none':'block';if(c)c.classList.toggle('open',!o);}
+let allOpen=true;
+function toggleAll(){allOpen=!allOpen;document.querySelectorAll('.n1b,.n2b').forEach(b=>b.style.display=allOpen?'block':'none');document.querySelectorAll('.chev').forEach(c=>c.classList.toggle('open',allOpen));}
+function doSearch(q){q=q.toLowerCase().trim();if(!q){document.querySelectorAll('.n1,.n2,.n3').forEach(e=>e.classList.remove('hidden'));document.querySelectorAll('.n1b,.n2b').forEach(b=>b.style.display='block');document.querySelectorAll('.chev').forEach(c=>c.classList.add('open'));return;}document.querySelectorAll('.n3').forEach(e=>e.classList.toggle('hidden',!e.dataset.s.includes(q)));document.querySelectorAll('.n2').forEach(e=>{const m=e.dataset.s.includes(q);const anyC=[...e.querySelectorAll('.n3')].some(n=>!n.classList.contains('hidden'));e.classList.toggle('hidden',!m&&!anyC);if(m||anyC){const b=e.querySelector('.n2b'),c=e.querySelector('.chev');if(b)b.style.display='block';if(c)c.classList.add('open');}});document.querySelectorAll('.n1').forEach(e=>{const m=e.dataset.s.includes(q);const anyC=[...e.querySelectorAll('.n2')].some(n=>!n.classList.contains('hidden'));e.classList.toggle('hidden',!m&&!anyC);if(m||anyC){const b=e.querySelector('.n1b'),c=e.querySelector('.chev');if(b)b.style.display='block';if(c)c.classList.add('open');}});}
+
+const listInner=document.getElementById('listInner');
+D.forEach(n=>listInner.appendChild(n1el(n)));
+document.querySelectorAll('.n1b,.n2b').forEach(b=>b.style.display='block');
+document.querySelectorAll('.chev').forEach(c=>c.classList.add('open'));
+
+const PAD_X=20,PAD_Y=20,NODE_W_ROOT=140,NODE_H_ROOT=32,NODE_W_L1=88,NODE_H_L1=38,NODE_W_L2=90,NODE_H_L2=24,NODE_W_L3=80,NODE_H_L3=22,GAP_X_L1=12,GAP_X_L2=6,GAP_X_L3=5,ROW_H_01=55,ROW_H_12=50,ROW_H_23=44;
+let lines=[];
+
+function measureL2Group(n2){if(!n2.children||!n2.children.length)return NODE_W_L2;const l3total=n2.children.length*NODE_W_L3+(n2.children.length-1)*GAP_X_L3;return Math.max(NODE_W_L2,l3total);}
+function measureL1Group(n1){if(!n1.children||!n1.children.length)return NODE_W_L1;const l2widths=n1.children.map(measureL2Group);const totalL2=l2widths.reduce((a,b)=>a+b,0)+(n1.children.length-1)*GAP_X_L2;return Math.max(NODE_W_L1,totalL2);}
+
+function buildLayout(){
+  lines=[];
+  const canvas=document.getElementById('treeCanvas');
+  const svg=document.getElementById('svgLines');
+  canvas.querySelectorAll('.t-node').forEach(e=>e.remove());
+  svg.innerHTML='';
+  const l1widths=D.map(measureL1Group);
+  const totalW=l1widths.reduce((a,b)=>a+b,0)+(D.length-1)*GAP_X_L1+PAD_X*2;
+  const rootY=PAD_Y,rootX=totalW/2-NODE_W_ROOT/2;
+  addNode(rootX,rootY,NODE_W_ROOT,NODE_H_ROOT,'harfang-events.fr','root-node');
+  const l1Y=rootY+NODE_H_ROOT+ROW_H_01;
+  let curX=PAD_X;
+  D.forEach((n1,i)=>{
+    const gw=l1widths[i];
+    const l1X=curX+gw/2-NODE_W_L1/2;
+    addNode(l1X,l1Y,NODE_W_L1,NODE_H_L1,n1.title,'l1'+(n1.hub?' hub-node':''));
+    addLine(totalW/2,rootY+NODE_H_ROOT,l1X+NODE_W_L1/2,l1Y);
+    if(n1.children&&n1.children.length){
+      const l2Y=l1Y+NODE_H_L1+ROW_H_12;
+      const l2ws=n1.children.map(measureL2Group);
+      const totalL2W=l2ws.reduce((a,b)=>a+b,0)+(n1.children.length-1)*GAP_X_L2;
+      let l2CurX=curX+(gw-totalL2W)/2;
+      n1.children.forEach((n2,j)=>{
+        const l2gw=l2ws[j];
+        const l2X=l2CurX+l2gw/2-NODE_W_L2/2;
+        addNode(l2X,l2Y,NODE_W_L2,NODE_H_L2,n2.title,'l2'+(n2.hub?' hub-node':''));
+        addLine(l1X+NODE_W_L1/2,l1Y+NODE_H_L1,l2X+NODE_W_L2/2,l2Y);
+        if(n2.children&&n2.children.length){
+          const l3Y=l2Y+NODE_H_L2+ROW_H_23;
+          const l3total=n2.children.length*NODE_W_L3+(n2.children.length-1)*GAP_X_L3;
+          let l3CurX=l2CurX+(l2gw-l3total)/2;
+          n2.children.forEach(n3=>{
+            addNode(l3CurX,l3Y,NODE_W_L3,NODE_H_L3,n3.title,'l3');
+            addLine(l2X+NODE_W_L2/2,l2Y+NODE_H_L2,l3CurX+NODE_W_L3/2,l3Y);
+            l3CurX+=NODE_W_L3+GAP_X_L3;
+          });
+        }
+        l2CurX+=l2gw+GAP_X_L2;
+      });
+    }
+    curX+=gw+GAP_X_L1;
+  });
+  let maxY=0;
+  canvas.querySelectorAll('.t-node').forEach(n=>{const b=parseInt(n.style.top)+(parseInt(n.style.height)||40);if(b>maxY)maxY=b;});
+  canvas.style.width=totalW+'px';canvas.style.height=(maxY+PAD_Y)+'px';
+  svg.setAttribute('viewBox',`0 0 ${totalW} ${maxY+PAD_Y}`);
+  svg.style.width=totalW+'px';svg.style.height=(maxY+PAD_Y)+'px';
+  lines.forEach(([x1,y1,x2,y2])=>{
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const midY=(y1+y2)/2;
+    path.setAttribute('d',`M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+    path.setAttribute('stroke','rgba(239,201,35,0.25)');path.setAttribute('stroke-width','1.5');path.setAttribute('fill','none');path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path);
+  });
+}
+function addNode(x,y,w,h,label,cls){
+  const canvas=document.getElementById('treeCanvas');
+  const el=document.createElement('div');
+  el.className='t-node '+cls;el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.minHeight=h+'px';el.textContent=label;
+  canvas.appendChild(el);
+}
+function addLine(x1,y1,x2,y2){lines.push([x1,y1,x2,y2]);}
+
+function setMode(mode){
+  document.getElementById('btnList').classList.toggle('active',mode==='list');
+  document.getElementById('btnTree').classList.toggle('active',mode==='tree');
+  if(mode==='list'){document.getElementById('listView').classList.remove('hidden');document.getElementById('treeView').classList.remove('active');}
+  else{document.getElementById('listView').classList.add('hidden');document.getElementById('treeView').classList.add('active');buildLayout();}
+}
+</script>
+</body>
+</html>
